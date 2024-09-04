@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+    <!-- dinh nghia vi tri camera gan vao chassis -->
+    <joint name="camera_joint" type="fixed">
+        <parent link="chassis"/>
+        <child link="camera_link"/>
+        <origin xyz="0.276 0 0.181" rpy="0 0.18 0"/>
+    </joint>
+
+    <!-- dinh nghia chi tiet cho camera_link -->
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="0.010 0.03 0.03"/>
+            </geometry>
+            <material name="red"/>
+        </visual>        
+        <visual>
+            <origin xyz="0 0 -0.05"/>
+            <geometry>
+                <cylinder radius="0.002" length="0.1"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+
+    <!-- Them toa do cua image_standard chuyen tu he toa do robot -->
+    <!-- He toa do camera_optical_joint so voi camera_link hay con goi la he toa do quang hoc -->
+    <joint name="camera_optical_joint" type="fixed">
+        <parent link="camera_link"/>
+        <child link="camera_link_optical"/>
+        <origin xyz="0.0 0.0 0.0" rpy="${-pi/2} 0.0 ${-pi/2}"/>    <!--  quay -90 do quanh truc z sau do quay -90 do quanh truc x -->
+    </joint>
+
+    <link name="camera_link_optical"></link>         <!-- duoc khai bao de chuyen doi du lieu tu camera_link sang camera_optical_link, la 1 khung toa do nhung khong co dac tinh vat ly va hoa hoc-->
+    
+    <!-- Tich hop camera vao gazebo -->
+
+    <gazebo reference="camera_link">       <!--link ma gazebo dung de mo phong-->
+        <material>Gazebo/Red</material>    <!-- Dinh nghia camera trong gazebo co mau do-->
+        <!-- tham chieu gan vao laser frame -->
+        <sensor name="camera" type="camera">
+            <!-- loai cam bien ray co nghia la cam bien tia laser -->
+            <pose>0 0 0 0 0 0</pose>           
+            <!-- thanh phan pose gom xyzrpy deu bang 0 co nghia la cam bien nam chinh giua camera link -->
+            <visualize>true</visualize>
+            <!-- kich hoat kha nang hinh anh hoa cam bien trong gazebo -->
+            <update_rate>10</update_rate>      
+            <!--update 10 times 1 s  -->
+            <camera>
+                <horizontal_fov>1.089</horizontal_fov>    <!--goc nhin theo chieu ngang, theo don vi radian-->
+                <image>
+                    <format>R8G8B8</format>               <!--8 bit moi mau red, green, blue -->
+                    <width>640</width>                    <!--theo don vi pixel-->
+                    <height>480</height>
+                </image>
+
+                <clip>
+                    <near>0.05</near>                     <!--range camera can see-->
+                    <far>8.0</far>
+                </clip>
+
+            </camera>
+            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">     <!-- libgazebo_ros_camera.so  dung de quan ly qua trinh thu thap du lieu tu cam bien Camera trong Gazebo-->             
+                <frame_name>camera_link_optical</frame_name>      <!-- although attached to the camera link but need to publish data associated with optical_link-->
+                <!-- Gui them he toa do cua camera tai thoi diem hinh anh duoc chup -->
+            </plugin>
+        </sensor>
+    </gazebo>
+
+</robot>
